@@ -6,6 +6,7 @@ import (
 )
 
 type INotificationRepository interface {
+	FindAll() (*[]models.Notification, error)
 }
 
 type NotificationRepository struct {

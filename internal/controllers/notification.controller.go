@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/bigdann09/notifications/internal/services/notification"
 	"github.com/gin-gonic/gin"
 )
@@ -14,5 +16,11 @@ func NewNotificationController(service notification.INotificationService) *Notif
 }
 
 func (handler *NotificationController) FindAll(c *gin.Context) {
-
+	var query interface{}
+	err := c.ShouldBindQuery(&query)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, query)
 }

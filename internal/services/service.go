@@ -4,6 +4,7 @@ import (
 	"github.com/bigdann09/notifications/internal/config"
 	"github.com/bigdann09/notifications/internal/infrastructure/cache"
 	"github.com/bigdann09/notifications/internal/infrastructure/database"
+	"github.com/bigdann09/notifications/pkgs/validators"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -26,6 +27,11 @@ func NewService(logger *zap.Logger, cfg *config.Config) *Service {
 	logger.Info("registering cache service...")
 	cache := cache.NewCache(&cfg.Cache)
 	logger.Info("cache connected")
+
+	logger.Info("registering valitators...")
+	validator := validators.NewValidator()
+	validator.Register()
+	logger.Info("validators registered")
 
 	return &Service{
 		Logger:   logger,
