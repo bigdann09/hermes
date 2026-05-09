@@ -1,0 +1,102 @@
+services:
+  backend:
+    build: .
+    container_name: notification
+    ports:
+      - ":${PORT}"
+    environment:
+      - PORT=${PORT}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - NAME=${NAME}
+      - DOMAIN=${DOMAIN}
+      - URL=${URL}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_SSL=${DB_SSL}
+    networks:
+      - notification
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15
+    container_name: notification-postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - ":${DB_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - notification
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.8
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_KRAFT_MODE=true
+      - KAFKA_NODE_ID=1
+      - CLUSTER_ID="EJjdjdjdjd_wiii2j2dn"
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LOG_DIRS=/tmp/kraft-combined-logs
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - kraft_data:/var/lib/kafka/data
+    networks:
+      - notification
+
+  notifications:
+    build: .
+    container_name: notification-worker
+    command: ["./notification-worker"]
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_SSL=${DB_SSL}
+    networks:
+      - notification
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      backend:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  kraft_data:
+
+networks:
+  notification:
+    driver: bridge
