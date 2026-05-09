@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/bigdann09/notifications/internal/config"
-	"github.com/bigdann09/notifications/internal/database"
 	"github.com/bigdann09/notifications/internal/routes"
 	"github.com/bigdann09/notifications/internal/services"
 	"github.com/bigdann09/notifications/pkgs/logger"
@@ -24,7 +23,6 @@ type Server struct {
 	server   *http.Server
 	engine   *gin.Engine
 	services *services.Service
-	kafka    interface{}
 }
 
 func NewServer(cfg *config.Config) *Server {
@@ -80,8 +78,12 @@ func (app *Server) Shutdown() {
 		app.logger.Fatal("server forced to shutdown", zap.Error(err))
 	}
 
-	db, _ := database.GetDB().DB()
+	db, _ := app.services.Database.DB()
 	if err := db.Close(); err != nil {
+		app.logger.Fatal("server forced to shutdown", zap.Error(err))
+	}
+
+	if err := app.services.Cache.Close(); err != nil {
 		app.logger.Fatal("server forced to shutdown", zap.Error(err))
 	}
 

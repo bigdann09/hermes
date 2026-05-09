@@ -6,6 +6,7 @@ import (
 
 type Config struct {
 	App      AppConfig
+	Cache    CacheConfig
 	Database DatabaseConfig
 }
 
@@ -26,6 +27,13 @@ type DatabaseConfig struct {
 	Pass string
 	Name string
 	SSL  string
+}
+
+type CacheConfig struct {
+	Host     string
+	Port     string
+	Password string
+	Username string
 }
 
 func LoadConfig() (*Config, error) {
@@ -53,6 +61,12 @@ func LoadConfig() (*Config, error) {
 			Pass: v.GetString("DB_PASS"),
 			Name: v.GetString("DB_NAME"),
 			SSL:  v.GetString("DB_SSL"),
+		},
+		Cache: CacheConfig{
+			Host:     v.GetString("REDIS_HOST"),
+			Port:     v.GetString("REDIS_PORT"),
+			Password: v.GetString("REDIS_PASS"),
+			Username: v.GetString("REDIS_USER"),
 		},
 	}, nil
 }

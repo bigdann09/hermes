@@ -1,7 +1,7 @@
 include .env
 
 DATABASE := postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSL}
-MIGRATION_PATH := ./internal/database/migrations
+MIGRATION_PATH := ./internal/infrastructure/database/migrations
 
 run:
 	go run cmd/api/main.go
