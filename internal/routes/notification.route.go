@@ -8,7 +8,7 @@ import (
 
 func (routes *Route) NotificationRoute(version *gin.RouterGroup) {
 	routes.services.Logger.Info("notification controllers, services and routes")
-	service := notification.NewNotificationService(routes.services.Database, routes.services.Logger)
+	service := notification.NewNotificationService(routes.services.Database, routes.services.Logger, routes.services.Cache)
 	controller := controllers.NewNotificationController(service)
 
 	notification := version.Group("/notifications")

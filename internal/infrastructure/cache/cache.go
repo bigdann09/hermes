@@ -2,6 +2,8 @@ package cache
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -10,6 +12,9 @@ import (
 )
 
 var CacheClient *redis.Client
+var (
+	ErrCacheMiss error = errors.New("cache miss")
+)
 
 type Cache struct {
 	client *redis.Client
@@ -41,12 +46,20 @@ func GetCache() *redis.Client {
 	return CacheClient
 }
 
-func (c *Cache) Set(key string, value interface{}, ttl time.Duration) error {
-	return c.client.Set(c.ctx, key, value, ttl).Err()
+func (c *Cache) Set(key string, value any, ttl time.Duration) error {
+	payload, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	return c.client.Set(c.ctx, key, payload, ttl).Err()
 }
 
-func (c *Cache) Get(key string) (string, error) {
-	return c.client.Get(c.ctx, key).Result()
+func (c *Cache) Get(key string, dest any) error {
+	payload, err := c.client.Get(c.ctx, key).Bytes()
+	if err != nil {
+		return ErrCacheMiss
+	}
+	return json.Unmarshal(payload, dest)
 }
 
 func (c *Cache) Delete(key string) error {

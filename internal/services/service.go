@@ -30,7 +30,13 @@ func NewService(logger *zap.Logger, cfg *config.Config) *Service {
 
 	logger.Info("registering valitators...")
 	validator := validators.NewValidator()
-	validator.Register()
+	validator.Register(
+		&validators.ValidationField{
+			Tag:         "has_notification_type",
+			Func:        validator.HasNotificationType,
+			Translation: "{0} is not a supported notification type",
+		},
+	)
 	logger.Info("validators registered")
 
 	return &Service{
