@@ -42,7 +42,7 @@ func (srv *NotificationService) FindAll(query dtos.NotificationQuery) (*paginati
 		return &cached, nil
 	}
 
-	result, err := srv.repository.FindAll(&query)
+	result, err := srv.repository.FindAllPaginated(&query)
 	if err != nil {
 		fmt.Println(err)
 		srv.logger.Error("could not retrieve notifications", zap.Error(err))

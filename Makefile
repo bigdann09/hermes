@@ -17,3 +17,6 @@ migrate_down:
 
 migrate_force:
 	migrate -database ${DATABASE} -path ${MIGRATION_PATH} force ${version}
+
+seed:
+	go run cmd/cli/main.go seed

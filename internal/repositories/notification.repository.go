@@ -11,7 +11,7 @@ import (
 )
 
 type INotificationRepository interface {
-	FindAll(query *dtos.NotificationQuery) (*pagination.Pagination[models.Notification], error)
+	FindAllPaginated(query *dtos.NotificationQuery) (*pagination.Pagination[models.Notification], error)
 }
 
 type NotificationRepository struct {
@@ -23,8 +23,8 @@ func NewNotificationRepository(db *gorm.DB) INotificationRepository {
 	return &NotificationRepository{db: db, table: "notifications"}
 }
 
-func (repository *NotificationRepository) FindAll(query *dtos.NotificationQuery) (*pagination.Pagination[models.Notification], error) {
-	query.Default() // set default
+func (repository *NotificationRepository) FindAllPaginated(query *dtos.NotificationQuery) (*pagination.Pagination[models.Notification], error) {
+	query.Default()
 	queryable := repository.db.Table(repository.table)
 	if !reflect.DeepEqual(query.Type, nil) {
 		queryable.Where("type = ?", query.Type)
