@@ -28,9 +28,7 @@ func NewCache(cfg *config.CacheConfig) *Cache {
 		DB:       0,
 	})
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+	ctx := context.Background()
 	if err := client.Ping(ctx).Err(); err != nil {
 		return nil
 	}

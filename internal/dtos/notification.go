@@ -5,6 +5,7 @@ import "github.com/bigdann09/notifications/internal/models"
 type NotificationQuery struct {
 	Page   uint                    `form:"page,omitempty"`
 	Limit  uint                    `form:"limit,omitempty"`
+	UserID string                  `form:"user_id" binding:"required,uuid"`
 	Type   models.NotificationType `form:"type,omitempty" binding:"has_notification_type"`
 	IsRead bool                    `form:"is_read,omitempty" binding:"boolean"`
 	SortBy string                  `form:"order_by,omitempty"`

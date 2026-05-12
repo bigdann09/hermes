@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/bigdann09/notifications/internal/dtos"
 	"github.com/bigdann09/notifications/internal/models"
@@ -26,7 +27,8 @@ func NewNotificationRepository(db *gorm.DB) INotificationRepository {
 func (repository *NotificationRepository) FindAllPaginated(query *dtos.NotificationQuery) (*pagination.Pagination[models.Notification], error) {
 	query.Default()
 	queryable := repository.db.Table(repository.table)
-	if !reflect.DeepEqual(query.Type, nil) {
+	if !strings.EqualFold(string(query.Type), "") {
+		fmt.Println("in here for type")
 		queryable.Where("type = ?", query.Type)
 	}
 	if !reflect.DeepEqual(query.IsRead, nil) {

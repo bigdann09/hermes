@@ -1,7 +1,6 @@
 package notification
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/bigdann09/notifications/internal/dtos"
@@ -37,19 +36,16 @@ func (srv *NotificationService) FindAll(query dtos.NotificationQuery) (*paginati
 	cache_key := "notifications:all"
 	var cached pagination.Pagination[models.Notification]
 	if err := srv.cache.Get(cache_key, &cached); err == nil {
-		fmt.Println("from cache")
 		srv.logger.Info("notifications retrieved successfully from cache")
 		return &cached, nil
 	}
 
 	result, err := srv.repository.FindAllPaginated(&query)
 	if err != nil {
-		fmt.Println(err)
 		srv.logger.Error("could not retrieve notifications", zap.Error(err))
 		return nil, apiresponse.InternalServerError("could not retrieve notifications")
 	}
 
-	fmt.Println("from database")
 	srv.logger.Info("notifications retrieved successfully")
 	srv.cache.Set(cache_key, result, 10*time.Minute)
 	return result, nil

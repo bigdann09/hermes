@@ -39,8 +39,7 @@ type CacheConfig struct {
 func LoadConfig() (*Config, error) {
 	v := viper.New()
 	v.AddConfigPath(".")
-	v.AddConfigPath("..")
-	v.AddConfigPath("../..")
+	v.AddConfigPath("../../")
 	v.SetConfigName(".env")
 	v.SetConfigType("env")
 	v.AutomaticEnv()
