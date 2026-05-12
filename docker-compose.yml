@@ -33,6 +33,13 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    develop:
+      watch:
+        - action: rebuild
+          path: .
+        - action: sync
+          path: .
+          target: /app
 
   postgres:
     image: postgres:15
