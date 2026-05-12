@@ -4,16 +4,19 @@ import (
 	"github.com/bigdann09/notifications/internal/config"
 	"github.com/bigdann09/notifications/internal/infrastructure/cache"
 	"github.com/bigdann09/notifications/internal/infrastructure/database"
+	"github.com/bigdann09/notifications/internal/infrastructure/kafka"
 	"github.com/bigdann09/notifications/pkgs/validators"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type Service struct {
-	Logger   *zap.Logger
-	Config   *config.Config
-	Database *gorm.DB
-	Cache    *cache.Cache
+	Logger        *zap.Logger
+	Config        *config.Config
+	Database      *gorm.DB
+	Cache         *cache.Cache
+	KafkaProducer *kafka.KafkaProducer
+	KafkaConsumer *kafka.KafkaConsumer
 }
 
 func NewService(logger *zap.Logger, cfg *config.Config) *Service {
@@ -39,10 +42,26 @@ func NewService(logger *zap.Logger, cfg *config.Config) *Service {
 	)
 	logger.Info("validators registered")
 
+	logger.Info("setting up kafka producer...")
+	kafka_producer, err := kafka.NewKafkaProducer(&cfg.Kafka)
+	if err != nil {
+		logger.Fatal("failed to connect to kafka", zap.Error(err))
+	}
+	logger.Info("kafka connected")
+
+	logger.Info("setting up kafka consumer...")
+	kafka_consumer, err := kafka.NewKafkaConsumer(&cfg.Kafka, cfg.App.Name)
+	if err != nil {
+		logger.Fatal("failed to connect to kafka consumer", zap.Error(err))
+	}
+	logger.Info("kafka consumer connected")
+
 	return &Service{
-		Logger:   logger,
-		Config:   cfg,
-		Database: db,
-		Cache:    cache,
+		Logger:        logger,
+		Config:        cfg,
+		Database:      db,
+		Cache:         cache,
+		KafkaProducer: kafka_producer,
+		KafkaConsumer: kafka_consumer,
 	}
 }

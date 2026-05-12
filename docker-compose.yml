@@ -1,9 +1,9 @@
 services:
   backend:
     build: .
-    container_name: notification
+    container_name: hermes
     ports:
-      - ":${PORT}"
+      - "${PORT}:${PORT}"
     environment:
       - PORT=${PORT}
       - ENVIRONMENT=${ENVIRONMENT}
@@ -12,11 +12,18 @@ services:
       - URL=${URL}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       - LOG_LEVEL=${LOG_LEVEL}
-      - DB_HOST=${DB_HOST}
+      - DB_HOST=postgres
       - DB_PORT=${DB_PORT}
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
       - DB_SSL=${DB_SSL}
+      - REDIS_HOST=redis
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_PASS=${REDIS_PASS}
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_RETRIES=${KAFKA_RETRIES}
     networks:
       - notification
     depends_on:
@@ -24,6 +31,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   postgres:
     image: postgres:15
@@ -49,7 +58,7 @@ services:
     image: confluentinc/cp-kafka:7.7.8
     container_name: kafka
     ports:
-      - "9092:9092"
+      - ":9092"
     environment:
       - KAFKA_KRAFT_MODE=true
       - KAFKA_NODE_ID=1
@@ -71,6 +80,14 @@ services:
     networks:
       - notification
 
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - ":${REDIS_PORT}"
+    networks:
+      - notification
+
   notifications:
     build: .
     container_name: notification-worker
@@ -78,11 +95,14 @@ services:
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
       - LOG_LEVEL=${LOG_LEVEL}
-      - DB_HOST=${DB_HOST}
+      - DB_HOST=postgres
       - DB_PORT=${DB_PORT}
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
       - DB_SSL=${DB_SSL}
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_RETRIES=${KAFKA_RETRIES}
     networks:
       - notification
     depends_on:
@@ -90,6 +110,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      redis:
+        condition: service_started
       backend:
         condition: service_started
 

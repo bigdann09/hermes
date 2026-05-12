@@ -7,6 +7,7 @@ import (
 type Config struct {
 	App      AppConfig
 	Cache    CacheConfig
+	Kafka    KafkaConfig
 	Database DatabaseConfig
 }
 
@@ -36,6 +37,11 @@ type CacheConfig struct {
 	Username string
 }
 
+type KafkaConfig struct {
+	Brokers string
+	Retries string
+}
+
 func LoadConfig() (*Config, error) {
 	v := viper.New()
 	v.AddConfigPath(".")
@@ -44,7 +50,9 @@ func LoadConfig() (*Config, error) {
 	v.SetConfigType("env")
 	v.AutomaticEnv()
 	if err := v.ReadInConfig(); err != nil {
-		return nil, err
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, err
+		}
 	}
 
 	return &Config{
@@ -70,6 +78,10 @@ func LoadConfig() (*Config, error) {
 			Port:     v.GetString("REDIS_PORT"),
 			Password: v.GetString("REDIS_PASS"),
 			Username: v.GetString("REDIS_USER"),
+		},
+		Kafka: KafkaConfig{
+			Brokers: v.GetString("KAFKA_BROKERS"),
+			Retries: v.GetString("KAFKA_RETRIES"),
 		},
 	}, nil
 }
