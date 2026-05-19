@@ -1,6 +1,8 @@
 package channels
 
 type MailChannel struct {
+	client any
+	from   string
 }
 
 func NewMailChannel() *MailChannel {

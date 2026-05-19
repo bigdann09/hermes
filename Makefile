@@ -18,6 +18,12 @@ migrate_down:
 migrate_force:
 	migrate -database ${DATABASE} -path ${MIGRATION_PATH} force ${version}
 
+docker_run:
+	docker compose up --build --watch
+
+docker_down:
+	docker compose down
+
 seed:
 	go build -o cli cmd/cli/main.go
 	./cli seed

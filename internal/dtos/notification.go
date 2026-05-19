@@ -2,6 +2,12 @@ package dtos
 
 import "github.com/bigdann09/notifications/internal/models"
 
+type NotificationRequest struct {
+	UserID string                  `json:"user_id" binding:"required,uuid"`
+	Type   models.NotificationType `json:"type" binding:"required,has_notification_type"`
+	Title  string                  `json:"title" binding:"required"`
+}
+
 type NotificationQuery struct {
 	Page   uint                    `form:"page,omitempty"`
 	Limit  uint                    `form:"limit,omitempty"`

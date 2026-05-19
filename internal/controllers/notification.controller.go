@@ -31,3 +31,7 @@ func (handler *NotificationController) FindAll(c *gin.Context) {
 
 	apiresponse.OK(c, "notifications retrieved successfully", result)
 }
+
+func (handler *NotificationController) Create(c *gin.Context) {
+
+}

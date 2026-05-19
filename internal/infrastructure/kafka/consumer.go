@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/IBM/sarama"
@@ -9,57 +10,38 @@ import (
 )
 
 type KafkaConsumer struct {
-	group sarama.ConsumerGroup
+	consumer sarama.ConsumerGroup
 }
 
-type ConsumerHandler func(ctx context.Context, topic string, key, payload []byte) error
-
 func NewKafkaConsumer(cfg *config.KafkaConfig, groupID string) (*KafkaConsumer, error) {
+	if cfg.Brokers == "" {
+		return nil, errors.New("kafka brokers not configured")
+	}
+
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 
 	brokers := strings.Split(cfg.Brokers, ",")
-	group, err := sarama.NewConsumerGroup(brokers, groupID, config)
+	consumer, err := sarama.NewConsumerGroup(brokers, groupID, config)
 	if err != nil {
 		return nil, err
 	}
 
-	return &KafkaConsumer{group: group}, nil
+	return &KafkaConsumer{consumer: consumer}, nil
 }
 
-func (c *KafkaConsumer) Close() error {
-	return c.group.Close()
+func (k *KafkaConsumer) Close() error {
+	return k.consumer.Close()
 }
 
-func (c *KafkaConsumer) Consume(ctx context.Context, topics []string, handler ConsumerHandler) error {
-	consumer := &groupHandler{
-		handler: handler,
-	}
-
+func (k *KafkaConsumer) Consume(ctx context.Context, topics []string, handler sarama.ConsumerGroupHandler) error {
 	for {
-		if err := c.group.Consume(ctx, topics, consumer); err != nil {
+		if err := k.consumer.Consume(ctx, topics, handler); err != nil {
 			return err
 		}
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
 	}
-}
-
-// groupHandler implements sarama.ConsumerGroupHandler
-type groupHandler struct {
-	handler ConsumerHandler
-}
-
-func (h *groupHandler) Setup(_ sarama.ConsumerGroupSession) error   { return nil }
-func (h *groupHandler) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
-func (h *groupHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	for msg := range claim.Messages() {
-		err := h.handler(sess.Context(), msg.Topic, msg.Key, msg.Value)
-		if err == nil {
-			sess.MarkMessage(msg, "")
-		}
-	}
-	return nil
 }

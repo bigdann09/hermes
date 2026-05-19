@@ -91,9 +91,9 @@ func (app *Server) Shutdown() {
 		app.logger.Error("failed to close kafka producer", zap.Error(err))
 	}
 
-	if err := app.services.KafkaConsumer.Close(); err != nil {
-		app.logger.Error("failed to close kafka consumer", zap.Error(err))
-	}
+	// if err := app.services.KafkaConsumer.Close(); err != nil {
+	// 	app.logger.Error("failed to close kafka consumer", zap.Error(err))
+	// }
 
 	<-ctx.Done()
 	app.logger.Info("server exited")
