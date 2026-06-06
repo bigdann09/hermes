@@ -59,15 +59,15 @@ func main() {
 		panic(err)
 	}
 
-	notificationRepository := repositories.NewNotificationRepository(db)
-	channelList := []channels.IChannel{
-		channels.NewDatabaseChannel(notificationRepository),
+	notification_repository := repositories.NewNotificationRepository(db)
+	channel_list := []channels.IChannel{
+		channels.NewDatabaseChannel(notification_repository),
 		channels.NewMailChannel(&cfg.Mail),
 		channels.NewPushChannel(log),
 	}
 
-	srv := notification.NewDispatcherService(log, channelList)
-	notificationConsumer := &NotificationConsumer{
+	srv := notification.NewDispatcherService(log, channel_list)
+	notification_consumer := &NotificationConsumer{
 		logger:  log,
 		service: srv,
 	}
@@ -86,7 +86,7 @@ func main() {
 
 	errCh := make(chan error, 1)
 	go func() {
-		if err := consumer.Consume(ctx, []string{notificationTopic}, notificationConsumer); err != nil {
+		if err := consumer.Consume(ctx, []string{notificationTopic}, notification_consumer); err != nil {
 			errCh <- err
 		}
 	}()
