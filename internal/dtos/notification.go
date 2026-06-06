@@ -3,9 +3,21 @@ package dtos
 import "github.com/bigdann09/notifications/internal/models"
 
 type NotificationRequest struct {
-	UserID string                  `json:"user_id" binding:"required,uuid"`
-	Type   models.NotificationType `json:"type" binding:"required,has_notification_type"`
-	Title  string                  `json:"title" binding:"required"`
+	UserID   string                  `json:"user_id" binding:"required,uuid"`
+	Type     models.NotificationType `json:"type" binding:"required,has_notification_type"`
+	Title    string                  `json:"title" binding:"required"`
+	Message  string                  `json:"message" binding:"required"`
+	Metadata map[string]any          `json:"metadata,omitempty"`
+}
+
+type KafkaNotificationMessage struct {
+	UserID   string         `json:"user_id"`
+	Email    string         `json:"email"`
+	Title    string         `json:"title"`
+	Message  string         `json:"message"`
+	Type     string         `json:"type"`
+	Metadata map[string]any `json:"metadata,omitempty"`
+	Channels []string       `json:"channels"`
 }
 
 type NotificationQuery struct {

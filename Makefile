@@ -24,6 +24,12 @@ docker_run:
 docker_down:
 	docker compose down
 
+docker_seed:
+	docker compose run --rm --no-deps backend ./cli seed
+
+docker_migrate:
+	docker compose run --rm migrate
+
 seed:
 	go build -o cli cmd/cli/main.go
 	./cli seed

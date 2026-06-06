@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/bigdann09/notifications/internal/dtos"
 	"github.com/bigdann09/notifications/internal/services/notification"
 	"github.com/bigdann09/notifications/pkgs/apiresponse"
@@ -33,5 +35,14 @@ func (handler *NotificationController) FindAll(c *gin.Context) {
 }
 
 func (handler *NotificationController) Create(c *gin.Context) {
+	var request dtos.NotificationRequest
+	if err := binder.BindJSON(c, &request); err != nil {
+		apiresponse.Response(c, err)
+		return
+	}
 
+	fmt.Println("request", request)
+
+	response := handler.service.Send(request)
+	apiresponse.Response(c, response)
 }

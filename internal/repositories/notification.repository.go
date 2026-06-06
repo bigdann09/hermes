@@ -2,8 +2,6 @@ package repositories
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
 
 	"github.com/bigdann09/notifications/internal/dtos"
 	"github.com/bigdann09/notifications/internal/models"
@@ -12,6 +10,7 @@ import (
 )
 
 type INotificationRepository interface {
+	Create(notification *models.Notification) error
 	FindAllPaginated(query *dtos.NotificationQuery) (*pagination.Pagination[models.Notification], error)
 }
 
@@ -24,22 +23,21 @@ func NewNotificationRepository(db *gorm.DB) INotificationRepository {
 	return &NotificationRepository{db: db, table: "notifications"}
 }
 
+func (repository *NotificationRepository) Create(notification *models.Notification) error {
+	return repository.db.Table(repository.table).Create(notification).Error
+}
+
 func (repository *NotificationRepository) FindAllPaginated(query *dtos.NotificationQuery) (*pagination.Pagination[models.Notification], error) {
 	query.Default()
-	queryable := repository.db.Table(repository.table)
-	if !strings.EqualFold(string(query.Type), "") {
-		fmt.Println("in here for type")
-		queryable.Where("type = ?", query.Type)
+	queryable := repository.db.Table(repository.table).Where("user_id = ?", query.UserID)
+	if query.Type != "" {
+		queryable = queryable.Where("type = ?", query.Type)
 	}
-	if !reflect.DeepEqual(query.IsRead, nil) {
-		if query.IsRead {
-			queryable.Where("read_at IS NOT NULL")
-		} else {
-			queryable.Where("read_at IS NULL")
-		}
+	if query.IsRead {
+		queryable = queryable.Where("read_at IS NOT NULL")
 	}
-	if !reflect.DeepEqual(query.SortBy, nil) {
-		queryable.Order(fmt.Sprintf("%s %s", query.SortBy, query.Order))
+	if query.SortBy != "" {
+		queryable = queryable.Order(fmt.Sprintf("%s %s", query.SortBy, query.Order))
 	}
 
 	result := pagination.NewPagination[models.Notification](queryable, query.Page, query.Limit)

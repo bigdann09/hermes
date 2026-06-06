@@ -9,7 +9,17 @@ var (
 	Database  Channel = "database"
 )
 
+type SendNotificationPayload struct {
+	UserID   string
+	Email    string
+	Title    string
+	Message  string
+	Type     string
+	Data     map[string]any
+	Channels []Channel
+}
+
 type IChannel interface {
 	Type() string
-	Send() error
+	Send(payload SendNotificationPayload) error
 }

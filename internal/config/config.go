@@ -6,6 +6,7 @@ import (
 
 type Config struct {
 	App      AppConfig
+	Mail     MailConfig
 	Cache    CacheConfig
 	Kafka    KafkaConfig
 	Database DatabaseConfig
@@ -40,6 +41,14 @@ type CacheConfig struct {
 type KafkaConfig struct {
 	Brokers string
 	Retries string
+}
+
+type MailConfig struct {
+	Host string
+	Port int
+	User string
+	Pass string
+	From string
 }
 
 func LoadConfig() (*Config, error) {
@@ -82,6 +91,13 @@ func LoadConfig() (*Config, error) {
 		Kafka: KafkaConfig{
 			Brokers: v.GetString("KAFKA_BROKERS"),
 			Retries: v.GetString("KAFKA_RETRIES"),
+		},
+		Mail: MailConfig{
+			Host: v.GetString("MAIL_HOST"),
+			Port: v.GetInt("MAIL_PORT"),
+			User: v.GetString("MAIL_USER"),
+			Pass: v.GetString("MAIL_PASS"),
+			From: v.GetString("MAIL_FROM"),
 		},
 	}, nil
 }

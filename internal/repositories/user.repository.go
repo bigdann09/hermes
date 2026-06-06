@@ -31,7 +31,7 @@ func (repo *UserRepository) FindAll() ([]models.User, error) {
 
 func (repo *UserRepository) FindByID(id string) (*models.User, error) {
 	var user models.User
-	err := repo.db.Table(repo.table).First(&user, id).Error
+	err := repo.db.Table(repo.table).Where("id = ?", id).First(&user).Error
 	return &user, err
 }
 
