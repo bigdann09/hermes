@@ -16,7 +16,6 @@ type Service struct {
 	Database      *gorm.DB
 	Cache         *cache.Cache
 	KafkaProducer *kafka.KafkaProducer
-	// KafkaConsumer *kafka.KafkaConsumer
 }
 
 func NewService(logger *zap.Logger, cfg *config.Config) *Service {
@@ -49,19 +48,11 @@ func NewService(logger *zap.Logger, cfg *config.Config) *Service {
 	}
 	logger.Info("kafka connected")
 
-	logger.Info("setting up kafka consumer...")
-	// kafka_consumer, err := kafka.NewKafkaConsumer(&cfg.Kafka, cfg.App.Name)
-	// if err != nil {
-	// 	logger.Fatal("failed to connect to kafka consumer", zap.Error(err))
-	// }
-	// logger.Info("kafka consumer connected")
-
 	return &Service{
 		Logger:        logger,
 		Config:        cfg,
 		Database:      db,
 		Cache:         cache,
 		KafkaProducer: kafka_producer,
-		// KafkaConsumer: kafka_consumer,
 	}
 }

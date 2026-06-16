@@ -27,8 +27,10 @@ type NotificationConsumer struct {
 
 func (*NotificationConsumer) Setup(_ sarama.ConsumerGroupSession) error   { return nil }
 func (*NotificationConsumer) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
-
-func (n *NotificationConsumer) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+func (n *NotificationConsumer) ConsumeClaim(
+	sess sarama.ConsumerGroupSession,
+	claim sarama.ConsumerGroupClaim,
+) error {
 	for msg := range claim.Messages() {
 		if notificationTopic != msg.Topic {
 			n.logger.Warn(
@@ -84,18 +86,22 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	errCh := make(chan error, 1)
+	err_ch := make(chan error, 1)
 	go func() {
 		if err := consumer.Consume(ctx, []string{notificationTopic}, notification_consumer); err != nil {
-			errCh <- err
+			err_ch <- err
 		}
 	}()
 
 	select {
 	case sig := <-quit:
 		log.Info("shutting down", zap.String("signal", sig.String()))
-		cancel()
-	case err := <-errCh:
+		defer cancel()
+		err := consumer.Close()
+		if err != nil {
+			log.Error("failed to shut down kafka notification consumer", zap.Error(err))
+		}
+	case err := <-err_ch:
 		if err != nil {
 			log.Fatal("failed to consume messages", zap.Error(err))
 		}

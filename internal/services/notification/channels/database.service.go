@@ -24,7 +24,7 @@ func (channel *DatabaseChannel) Send(payload SendNotificationPayload) error {
 	if metadata == nil {
 		metadata = map[string]any{}
 	}
-	metadataJSON, err := json.Marshal(metadata)
+	metadata_json, err := json.Marshal(metadata)
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (channel *DatabaseChannel) Send(payload SendNotificationPayload) error {
 		UserID:   payload.UserID,
 		Type:     models.NotificationType(payload.Type),
 		Title:    payload.Title,
-		Metadata: string(metadataJSON),
+		Metadata: string(metadata_json),
 	}
 	return channel.repository.Create(notification)
 }
