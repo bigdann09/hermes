@@ -43,8 +43,8 @@ func (dispatcher *DispatcherService) Dispatch(msg *sarama.ConsumerMessage) {
 		Data:    payload.Metadata,
 	}
 
-	for _, channelName := range payload.Channels {
-		send_payload.Channels = []channels.Channel{channels.Channel(channelName)}
+	for _, channel_name := range payload.Channels {
+		send_payload.Channels = []channels.Channel{channels.Channel(channel_name)}
 		dispatcher.Send(send_payload)
 	}
 }

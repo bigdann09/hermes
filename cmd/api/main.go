@@ -14,11 +14,5 @@ func main() {
 	}
 
 	srv := server.NewServer(config)
-	go func() {
-		if err := srv.Start(); err != nil {
-			log.Fatal("failed to start server", err)
-		}
-	}()
-
-	srv.Shutdown()
+	srv.Start()
 }

@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"fmt"
-
 	"github.com/bigdann09/notifications/internal/dtos"
 	"github.com/bigdann09/notifications/internal/services/notification"
 	"github.com/bigdann09/notifications/pkgs/apiresponse"
@@ -40,8 +38,6 @@ func (handler *NotificationController) Create(c *gin.Context) {
 		apiresponse.Response(c, err)
 		return
 	}
-
-	fmt.Println("request", request)
 
 	response := handler.service.Send(request)
 	apiresponse.Response(c, response)

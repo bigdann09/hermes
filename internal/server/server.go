@@ -52,17 +52,18 @@ func NewServer(cfg *config.Config) *Server {
 	}
 }
 
-func (app *Server) Start() error {
-	app.logger.Info(
-		"starting server",
-		zap.String("port", app.config.App.Port),
-	)
+func (app *Server) Start() {
+	go func() {
+		app.logger.Info(
+			"starting server",
+			zap.String("port", app.config.App.Port),
+		)
+		if err := app.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			app.logger.Error("server failed to start", zap.Error(err))
+		}
+	}()
 
-	if err := app.server.ListenAndServe(); err != nil {
-		app.logger.Error("server failed to start", zap.Error(err))
-		return err
-	}
-	return nil
+	app.Shutdown()
 }
 
 func (app *Server) Shutdown() {

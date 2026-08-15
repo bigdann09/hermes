@@ -17,8 +17,8 @@ import (
 	"go.uber.org/zap"
 )
 
-const notificationGroup = "notifications"
-const notificationTopic = "notifications"
+const NOTIFICATION_GROUP = "notifications"
+const NOTIFICATION_TOPIC = "notifications"
 
 type NotificationConsumer struct {
 	logger  *zap.Logger
@@ -32,7 +32,7 @@ func (n *NotificationConsumer) ConsumeClaim(
 	claim sarama.ConsumerGroupClaim,
 ) error {
 	for msg := range claim.Messages() {
-		if notificationTopic != msg.Topic {
+		if NOTIFICATION_TOPIC != msg.Topic {
 			n.logger.Warn(
 				"received message with wrong topic",
 				zap.String("topic", msg.Topic),
@@ -55,7 +55,6 @@ func main() {
 	}
 
 	log := logger.NewLogger(&cfg.App)
-
 	db, err := database.Connect(&cfg.Database)
 	if err != nil {
 		panic(err)
@@ -74,7 +73,7 @@ func main() {
 		service: srv,
 	}
 
-	consumer, err := kafka.NewKafkaConsumer(&cfg.Kafka, notificationGroup)
+	consumer, err := kafka.NewKafkaConsumer(&cfg.Kafka, NOTIFICATION_GROUP)
 	if err != nil {
 		panic(err)
 	}
@@ -88,7 +87,7 @@ func main() {
 
 	err_ch := make(chan error, 1)
 	go func() {
-		if err := consumer.Consume(ctx, []string{notificationTopic}, notification_consumer); err != nil {
+		if err := consumer.Consume(ctx, []string{NOTIFICATION_TOPIC}, notification_consumer); err != nil {
 			err_ch <- err
 		}
 	}()
